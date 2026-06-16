@@ -1,21 +1,99 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import ParallaxLayer from './ParallaxLayer';
+import AnimatedText from './AnimatedText';
 
 const projectTypes = ['Web App', 'Mobile App', 'Android App', 'iOS App', 'Backend / API', 'Full-Stack', 'Other'];
 const budgets = ['Under $5K', '$5K - $10K', '$10K - $25K', '$25K - $50K', '$50K+', 'Not Sure'];
+
+function ScrambleText({ text }) {
+  const ref = useRef(null);
+  const [done, setDone] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || done) return;
+
+    const chars = '!@#$%^&*<>?/|{}[]ABCDEFabcdef0123456789';
+    const original = text;
+    const len = original.length;
+    let frame;
+    let resolved = 0;
+    const totalFrames = 40;
+
+    const scramble = () => {
+      const arr = original.split('').map((char, i) => {
+        if (i < resolved) return char;
+        return chars[Math.floor(Math.random() * chars.length)];
+      });
+      el.textContent = arr.join('');
+    };
+
+    let count = 0;
+    const interval = setInterval(() => {
+      scramble();
+      count++;
+      if (count % 5 === 0 && resolved < len) {
+        resolved++;
+      }
+      if (resolved >= len) {
+        el.textContent = original;
+        clearInterval(interval);
+        setDone(true);
+      }
+    }, 60);
+
+    return () => clearInterval(interval);
+  }, [text, done]);
+
+  return <span ref={ref}>{text}</span>;
+}
 
 export default function Contact() {
   const [form, setForm] = useState({ name: '', email: '', type: '', budget: '', message: '' });
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [scrambleDone, setScrambleDone] = useState(false);
+  const formRef = useRef(null);
+  const btnRef = useRef(null);
+  const sectionRef = useRef(null);
+  const [scrambleActive, setScrambleActive] = useState(false);
+
+  // Item 16: Trigger scramble on section enter
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setScrambleActive(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.3 }
+    );
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, []);
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.name || !form.email || !form.message) return;
+
+    // Item 18: Button collapses to circle
+    const btn = btnRef.current;
+    if (btn) {
+      btn.style.width = '48px';
+      btn.style.height = '48px';
+      btn.style.padding = '0';
+      btn.style.borderRadius = '50%';
+      btn.style.overflow = 'hidden';
+    }
+
     setSubmitting(true);
     try {
       await addDoc(collection(db, 'enquiries'), {
@@ -24,16 +102,37 @@ export default function Contact() {
       });
       setSuccess(true);
       setForm({ name: '', email: '', type: '', budget: '', message: '' });
+
+      // Expand button back
+      if (btn) {
+        btn.style.width = '';
+        btn.style.height = '';
+        btn.style.padding = '';
+        btn.style.borderRadius = '';
+        btn.style.overflow = '';
+        btn.textContent = '🚀 Launched!';
+        setTimeout(() => {
+          btn.textContent = 'Launch the Project 🚀';
+        }, 3000);
+      }
+
       setTimeout(() => setSuccess(false), 5000);
     } catch (err) {
       console.error(err);
+      if (btn) {
+        btn.style.width = '';
+        btn.style.height = '';
+        btn.style.padding = '';
+        btn.style.borderRadius = '';
+        btn.style.overflow = '';
+      }
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <section id="contact" className="relative py-32 overflow-hidden bg-[#050810]">
+    <section id="contact" ref={sectionRef} className="relative py-32 overflow-hidden bg-[#050810]">
       <ParallaxLayer speed={0.2} className="absolute inset-0">
         <div className="absolute inset-0 opacity-30"
           style={{
@@ -47,12 +146,22 @@ export default function Contact() {
 
       <div className="relative z-10 max-w-7xl mx-auto px-6">
         <div className="grid md:grid-cols-2 gap-16 items-start">
-          {/* Left - Invitation */}
           <div>
-            <p className="font-mono text-xs text-[#00D4FF] tracking-[0.2em] mb-4">// LET'S TALK</p>
+            <p className="font-mono text-xs text-[#00D4FF] tracking-[0.2em] mb-4">
+              <AnimatedText text="// LET'S TALK" type="chars" stagger={40} />
+            </p>
             <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-              Ready to orbit something{' '}
-              <span className="text-gradient-cyber">great?</span>
+              {scrambleActive ? (
+                <>
+                  <ScrambleText text="Ready to orbit something" />{' '}
+                  <span className="text-gradient-cyber"><ScrambleText text="great?" /></span>
+                </>
+              ) : (
+                <>
+                  Ready to orbit something{' '}
+                  <span className="text-gradient-cyber">great?</span>
+                </>
+              )}
             </h2>
             <p className="text-lg text-[#F0F4FF]/60 mb-10 leading-relaxed">
               Tell us your idea. We'll tell you how to build it.
@@ -79,7 +188,6 @@ export default function Contact() {
               </div>
             </div>
 
-            {/* Social links */}
             <div className="flex gap-4">
               {['LinkedIn', 'GitHub', 'Twitter'].map((s) => (
                 <a key={s} href="#" className="px-5 py-2.5 border border-[#F0F4FF]/10 rounded-full text-xs text-[#F0F4FF]/60 hover:border-[#00D4FF]/30 hover:text-[#00D4FF] transition-all font-medium">
@@ -89,36 +197,16 @@ export default function Contact() {
             </div>
           </div>
 
-          {/* Right - Form */}
           <div className="bg-[#0A1628]/60 backdrop-blur-sm border border-[#F0F4FF]/5 rounded-3xl p-8 md:p-10">
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div>
-                <input
-                  name="name"
-                  value={form.name}
-                  onChange={handleChange}
-                  placeholder="Your Name *"
-                  required
-                  className="w-full px-5 py-3.5 bg-[#050810] border border-[#F0F4FF]/10 rounded-xl text-sm text-[#F0F4FF] placeholder-[#F0F4FF]/30 focus:outline-none focus:border-[#00D4FF]/50 transition-colors"
-                />
-              </div>
-              <div>
-                <input
-                  name="email"
-                  type="email"
-                  value={form.email}
-                  onChange={handleChange}
-                  placeholder="Email Address *"
-                  required
-                  className="w-full px-5 py-3.5 bg-[#050810] border border-[#F0F4FF]/10 rounded-xl text-sm text-[#F0F4FF] placeholder-[#F0F4FF]/30 focus:outline-none focus:border-[#00D4FF]/50 transition-colors"
-                />
-              </div>
+            <form ref={formRef} onSubmit={handleSubmit} className="space-y-5">
+              <InputField name="name" value={form.name} onChange={handleChange} placeholder="Your Name *" required />
+              <InputField name="email" type="email" value={form.email} onChange={handleChange} placeholder="Email Address *" required />
               <div className="grid grid-cols-2 gap-4">
                 <select
                   name="type"
                   value={form.type}
                   onChange={handleChange}
-                  className="px-5 py-3.5 bg-[#050810] border border-[#F0F4FF]/10 rounded-xl text-sm text-[#F0F4FF]/60 focus:outline-none focus:border-[#00D4FF]/50 transition-colors"
+                  className="px-5 py-3.5 bg-[#050810] border border-[#F0F4FF]/10 rounded-xl text-sm text-[#F0F4FF]/60 focus:outline-none focus:border-[#00D4FF]/50 transition-all duration-300"
                 >
                   <option value="">Project Type</option>
                   {projectTypes.map((t) => <option key={t} value={t}>{t}</option>)}
@@ -127,30 +215,41 @@ export default function Contact() {
                   name="budget"
                   value={form.budget}
                   onChange={handleChange}
-                  className="px-5 py-3.5 bg-[#050810] border border-[#F0F4FF]/10 rounded-xl text-sm text-[#F0F4FF]/60 focus:outline-none focus:border-[#00D4FF]/50 transition-colors"
+                  className="px-5 py-3.5 bg-[#050810] border border-[#F0F4FF]/10 rounded-xl text-sm text-[#F0F4FF]/60 focus:outline-none focus:border-[#00D4FF]/50 transition-all duration-300"
                 >
                   <option value="">Budget Range</option>
                   {budgets.map((b) => <option key={b} value={b}>{b}</option>)}
                 </select>
               </div>
-              <div>
-                <textarea
-                  name="message"
-                  value={form.message}
-                  onChange={handleChange}
-                  placeholder="Tell us about your project *"
-                  required
-                  rows={4}
-                  className="w-full px-5 py-3.5 bg-[#050810] border border-[#F0F4FF]/10 rounded-xl text-sm text-[#F0F4FF] placeholder-[#F0F4FF]/30 focus:outline-none focus:border-[#00D4FF]/50 transition-colors resize-none"
-                />
+              <textarea
+                name="message"
+                value={form.message}
+                onChange={handleChange}
+                placeholder="Tell us about your project *"
+                required
+                rows={4}
+                className="w-full px-5 py-3.5 bg-[#050810] border border-[#F0F4FF]/10 rounded-xl text-sm text-[#F0F4FF] placeholder-[#F0F4FF]/30 focus:outline-none focus:border-[#00D4FF]/50 transition-all duration-300 resize-none"
+              />
+              <div className="relative">
+                <button
+                  ref={btnRef}
+                  type="submit"
+                  disabled={submitting}
+                  className="w-full py-4 bg-[#FF6B35] text-white font-bold rounded-xl text-sm hover:shadow-lg hover:shadow-[#FF6B35]/30 transition-all duration-300 disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {submitting ? (
+                    <>
+                      <svg width="20" height="20" viewBox="0 0 36 36" className="animate-spin">
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="white" strokeWidth="2" opacity="0.4"/>
+                        <circle cx="18" cy="2" r="3" fill="white"/>
+                      </svg>
+                      <span className="sr-only">Sending...</span>
+                    </>
+                  ) : (
+                    'Launch the Project 🚀'
+                  )}
+                </button>
               </div>
-              <button
-                type="submit"
-                disabled={submitting}
-                className="w-full py-4 bg-[#FF6B35] text-white font-bold rounded-xl text-sm hover:shadow-lg hover:shadow-[#FF6B35]/30 transition-all duration-300 disabled:opacity-50"
-              >
-                {submitting ? 'Sending...' : 'Launch the Project 🚀'}
-              </button>
 
               {success && (
                 <div className="text-center py-4">
@@ -165,5 +264,42 @@ export default function Contact() {
         </div>
       </div>
     </section>
+  );
+}
+
+function InputField({ name, type = 'text', value, onChange, placeholder, required }) {
+  const [focused, setFocused] = useState(false);
+
+  return (
+    <div className="relative">
+      <input
+        name={name}
+        type={type}
+        value={value}
+        onChange={onChange}
+        placeholder={focused ? '' : placeholder}
+        required={required}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        className="w-full px-5 py-3.5 bg-[#050810] border border-[#F0F4FF]/10 rounded-xl text-sm text-[#F0F4FF] placeholder-[#F0F4FF]/30 focus:outline-none transition-all duration-300"
+        style={{
+          borderColor: focused ? '#00D4FF' : 'rgba(240,244,255,0.1)',
+          boxShadow: focused ? '0 0 0 1px rgba(0,212,255,0.3)' : 'none',
+        }}
+      />
+      {focused && (
+        <span className="absolute top-0 left-0 w-full h-full rounded-xl pointer-events-none"
+          style={{
+            border: '1px solid rgba(0,212,255,0.5)',
+            animation: 'border-draw 0.4s ease-out forwards',
+          }}
+        />
+      )}
+      {focused && (
+        <label className="absolute -top-2.5 left-3 px-1 text-[10px] text-[#00D4FF] bg-[#050810] font-mono transition-all duration-200">
+          {placeholder.replace(' *', '')}
+        </label>
+      )}
+    </div>
   );
 }

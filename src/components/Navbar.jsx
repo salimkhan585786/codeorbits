@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 const links = [
   { label: 'About', href: '#about' },
@@ -7,6 +7,46 @@ const links = [
   { label: 'Process', href: '#process' },
   { label: 'Contact', href: '#contact' },
 ];
+
+function MagneticLink({ href, label }) {
+  const ref = useRef(null);
+
+  // Item 21: Magnetic pull ±8px + underline draw
+  const handleMove = useCallback((e) => {
+    const el = ref.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const dx = e.clientX - cx;
+    const dy = e.clientY - cy;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist < 120) {
+      const pull = 1 - dist / 120;
+      el.style.transform = `translate(${dx * pull * 0.15}px, ${dy * pull * 0.15}px)`;
+    }
+  }, []);
+
+  const handleLeave = useCallback(() => {
+    if (ref.current) ref.current.style.transform = 'translate(0, 0)';
+  }, []);
+
+  return (
+    <a
+      ref={ref}
+      href={href}
+      onMouseMove={handleMove}
+      onMouseLeave={handleLeave}
+      className="relative text-sm text-[#F0F4FF]/60 hover:text-[#00D4FF] transition-colors font-medium tracking-wide py-1 inline-block"
+    >
+      {label}
+      <span className="absolute bottom-0 left-0 w-full h-[1.5px] overflow-hidden">
+        <span className="absolute left-0 bottom-0 h-full w-1/2 bg-[#00D4FF] translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-300" />
+        <span className="absolute right-0 bottom-0 h-full w-1/2 bg-[#00D4FF] translate-x-[100%] group-hover:translate-x-0 transition-transform duration-300" />
+      </span>
+    </a>
+  );
+}
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -42,13 +82,16 @@ export default function Navbar() {
           </span>
         </a>
 
-        <div className="hidden md:flex items-center gap-8">
+        <div className="hidden md:flex items-center gap-8" style={{ perspective: '800px' }}>
           {links.map((l) => (
-            <a key={l.href} href={l.href} className="text-sm text-[#F0F4FF]/60 hover:text-[#00D4FF] transition-colors font-medium tracking-wide">
-              {l.label}
-            </a>
+            <span key={l.href} className="group inline-block">
+              <MagneticLink href={l.href} label={l.label} />
+            </span>
           ))}
-          <a href="#contact" className="px-5 py-2.5 bg-[#FF6B35] text-white text-sm font-bold rounded-full hover:shadow-lg hover:shadow-[#FF6B35]/30 transition-all duration-300">
+          <a
+            href="#contact"
+            className="px-5 py-2.5 bg-[#FF6B35] text-white text-sm font-bold rounded-full hover:shadow-lg hover:shadow-[#FF6B35]/30 transition-all duration-300"
+          >
             Start a Project
           </a>
         </div>

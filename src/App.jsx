@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import gsap from 'gsap';
+import ScrollTrigger from 'gsap/ScrollTrigger';
 import useParallax from './hooks/useParallax';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
@@ -10,6 +12,9 @@ import Testimonials from './components/Testimonials';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
 import CustomCursor from './components/CustomCursor';
+import ScrollProgress from './components/ScrollProgress';
+
+gsap.registerPlugin(ScrollTrigger);
 
 export default function App() {
   useParallax();
@@ -20,9 +25,13 @@ export default function App() {
     return () => clearTimeout(timer);
   }, []);
 
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    ScrollTrigger.refresh();
+  }, []);
+
   return (
     <>
-      {/* Loading Screen */}
       <div className={`loading-screen ${loading ? '' : 'hide'}`}>
         <div className="text-center">
           <svg width="60" height="60" viewBox="0 0 36 36" className="mx-auto mb-6">
@@ -37,9 +46,9 @@ export default function App() {
         </div>
       </div>
 
-      {/* Main Content */}
       <div className={`transition-opacity duration-700 ${loading ? 'opacity-0' : 'opacity-100'}`}>
         <CustomCursor />
+        <ScrollProgress />
         <Navbar />
         <Hero />
         <About />

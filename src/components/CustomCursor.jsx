@@ -9,6 +9,8 @@ export default function CustomCursor() {
     if (window.matchMedia('(pointer: coarse)').matches) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
+    const interactive = 'a, button, input, select, textarea, [role="button"]';
+
     const handleMouseMove = (e) => {
       setHidden(false);
       setPosition({ x: e.clientX, y: e.clientY });
@@ -17,27 +19,25 @@ export default function CustomCursor() {
     const handleMouseLeave = () => setHidden(true);
     const handleMouseEnter = () => setHidden(false);
 
-    const handleHoverStart = () => setHovered(true);
-    const handleHoverEnd = () => setHovered(false);
+    const handleHoverStart = (e) => {
+      if (e.target.closest(interactive)) setHovered(true);
+    };
+    const handleHoverEnd = (e) => {
+      if (e.target.closest(interactive)) setHovered(false);
+    };
 
     window.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseleave', handleMouseLeave);
     document.addEventListener('mouseenter', handleMouseEnter);
-
-    const interactiveElements = document.querySelectorAll('a, button, input, select, textarea, [role="button"]');
-    interactiveElements.forEach((el) => {
-      el.addEventListener('mouseenter', handleHoverStart);
-      el.addEventListener('mouseleave', handleHoverEnd);
-    });
+    document.addEventListener('mouseover', handleHoverStart);
+    document.addEventListener('mouseout', handleHoverEnd);
 
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseleave', handleMouseLeave);
       document.removeEventListener('mouseenter', handleMouseEnter);
-      interactiveElements.forEach((el) => {
-        el.removeEventListener('mouseenter', handleHoverStart);
-        el.removeEventListener('mouseleave', handleHoverEnd);
-      });
+      document.removeEventListener('mouseover', handleHoverStart);
+      document.removeEventListener('mouseout', handleHoverEnd);
     };
   }, []);
 

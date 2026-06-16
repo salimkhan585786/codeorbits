@@ -38,9 +38,11 @@
 
   .text-gradient-cyber {
     background: linear-gradient(135deg, #00D4FF, #7B2FBE);
+    background-size: 200% 200%;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    animation: gradient-shift 4s ease-in-out infinite;
   }
 
   .glow-cyan {
@@ -96,8 +98,43 @@
   50% { opacity: 1; transform: scale(1.2); }
 }
 
+@keyframes gradient-shift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes text-unit-in {
+  from { transform: translateY(105%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+@keyframes border-draw {
+  0%   { clip-path: inset(0 100% 0 0); }
+  100% { clip-path: inset(0 0 0 0); }
+}
+
+@keyframes particle-burst {
+  0%   { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(var(--bx), var(--by)) scale(0); opacity: 0; }
+}
+
+@keyframes slot-flicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
 .animate-float { animation: float 6s ease-in-out infinite; }
 .animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+.animate-gradient { animation: gradient-shift 4s ease-in-out infinite; }
+.animate-text-unit { animation: text-unit-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.animate-border-draw { animation: border-draw 0.4s ease-out forwards; }
+
+.counting {
+  color: #00D4FF;
+  text-shadow: 0 0 20px rgba(0, 212, 255, 0.6);
+  transition: color 0.3s, text-shadow 0.3s;
+}
 
 .loading-screen {
   position: fixed;
@@ -115,6 +152,12 @@
   visibility: hidden;
 }
 
+@media (max-width: 768px) {
+  .parallax-slow, .parallax-mid, .parallax-fast, .parallax-turbo {
+    transform: none !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
@@ -124,4 +167,7 @@
   .parallax-slow, .parallax-mid, .parallax-fast, .parallax-turbo {
     transform: none !important;
   }
+  .text-gradient-cyber { animation: none; }
+  .gsap-animated { transform: none !important; opacity: 1 !important; clip-path: none !important; }
+  .animate-text-unit { animation: none !important; opacity: 1 !important; transform: none !important; }
 }
