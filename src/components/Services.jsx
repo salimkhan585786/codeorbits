@@ -168,9 +168,7 @@ export default function Services() {
         <div ref={gridRef} className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6" style={{ perspective: '1000px' }}>
           {services.map((s, i) => (
             <div key={s.id} className="service-card" style={{ transformStyle: 'preserve-3d' }}>
-              <a href="#contact" className="block">
                 <ServiceCard service={s} index={i} />
-              </a>
             </div>
           ))}
         </div>

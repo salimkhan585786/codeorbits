@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import ScrollTrigger from 'gsap/ScrollTrigger';
 import { projects as defaultProjects } from '../data/projects';
@@ -10,29 +10,6 @@ function ProjectCard({ project, index }) {
   const wrapperRef = useRef(null);
   const imageRef = useRef(null);
   const numberRef = useRef(null);
-  const btnRef = useRef(null);
-  const [btnPos, setBtnPos] = useState({ x: 0, y: 0 });
-  const [mouseNear, setMouseNear] = useState(false);
-
-  // Item 11: Magnetic button
-  const handleBtnMove = (e) => {
-    const btn = btnRef.current;
-    if (!btn) return;
-    const rect = btn.getBoundingClientRect();
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top + rect.height / 2;
-    const dx = e.clientX - cx;
-    const dy = e.clientY - cy;
-    const dist = Math.sqrt(dx * dx + dy * dy);
-    if (dist < 100) {
-      const pull = 1 - dist / 100;
-      setBtnPos({ x: dx * pull * 0.4, y: dy * pull * 0.4 });
-      setMouseNear(true);
-    } else {
-      setBtnPos({ x: 0, y: 0 });
-      setMouseNear(false);
-    }
-  };
 
   // Item 10: Giant number scrub
   useEffect(() => {
@@ -57,8 +34,6 @@ function ProjectCard({ project, index }) {
   return (
     <div
       ref={cardRef}
-      onMouseMove={handleBtnMove}
-      onMouseLeave={() => { setBtnPos({ x: 0, y: 0 }); setMouseNear(false); }}
       className="group relative min-h-[450px] rounded-3xl overflow-hidden border border-[#F0F4FF]/5 hover:border-[#00D4FF]/20 transition-all duration-500"
     >
       {/* Item 10: Giant project number */}
@@ -94,23 +69,8 @@ function ProjectCard({ project, index }) {
         <p className="text-[#F0F4FF]/60 text-sm leading-relaxed mb-6">
           {project.desc}
         </p>
-        <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#00D4FF]/10 border border-[#00D4FF]/20 rounded-full text-[#00D4FF] text-sm font-mono mb-8">
+        <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#00D4FF]/10 border border-[#00D4FF]/20 rounded-full text-[#00D4FF] text-sm font-mono">
           {project.metric}
-        </div>
-
-        {/* Item 11: Magnetic circular button */}
-        <div className="relative inline-block">
-          <a
-            ref={btnRef}
-            href="#contact"
-            className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-[#FF6B35] text-white text-xs font-bold transition-all duration-200"
-            style={{
-              transform: `translate(${btnPos.x}px, ${btnPos.y}px)`,
-              boxShadow: mouseNear ? '0 0 30px rgba(255,107,53,0.5)' : 'none',
-            }}
-          >
-            View →
-          </a>
         </div>
       </div>
 
