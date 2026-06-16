@@ -3,10 +3,12 @@ import gsap from 'gsap';
 import ScrollTrigger from 'gsap/ScrollTrigger';
 import ParallaxLayer from './ParallaxLayer';
 import AnimatedText from './AnimatedText';
+import useSiteImages from '../hooks/useSiteImages';
 
 export default function About() {
   const sectionRef = useRef(null);
   const headlineRef = useRef(null);
+  const images = useSiteImages();
   const img1Ref = useRef(null);
   const img2Ref = useRef(null);
   const img3Ref = useRef(null);
@@ -51,7 +53,7 @@ export default function About() {
       <ParallaxLayer speed={0.2} className="absolute inset-0">
         <div className="absolute inset-0 opacity-20"
           style={{
-            backgroundImage: `url(https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=1920&q=80)`,
+            backgroundImage: `url(${images['about-bg']})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
           }}
@@ -78,9 +80,9 @@ export default function About() {
 
           <div className="relative h-[600px] hidden md:block">
             {[
-              { ref: img1Ref, src: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=400&q=80', alt: 'Developer', cls: 'top-0 right-0 w-64 h-80', border: '#00D4FF', idx: 0 },
-              { ref: img2Ref, src: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&q=80', alt: 'Team meeting', cls: 'top-20 left-0 w-72 h-80 z-10', border: '#7B2FBE', idx: 1 },
-              { ref: img3Ref, src: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&q=80', alt: 'Modern office', cls: 'bottom-0 right-10 w-80 h-64', border: '#00D4FF', idx: 2 },
+              { ref: img1Ref, src: images['about-1'], alt: 'Developer', cls: 'top-0 right-0 w-64 h-80', border: '#00D4FF', idx: 0 },
+              { ref: img2Ref, src: images['about-2'], alt: 'Team meeting', cls: 'top-20 left-0 w-72 h-80 z-10', border: '#7B2FBE', idx: 1 },
+              { ref: img3Ref, src: images['about-3'], alt: 'Modern office', cls: 'bottom-0 right-10 w-80 h-64', border: '#00D4FF', idx: 2 },
             ].map((img) => (
               <div
                 key={img.idx}

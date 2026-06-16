@@ -3,6 +3,7 @@ import gsap from 'gsap';
 import ScrollTrigger from 'gsap/ScrollTrigger';
 import ParallaxLayer from './ParallaxLayer';
 import AnimatedText from './AnimatedText';
+import useSiteImages from '../hooks/useSiteImages';
 
 const steps = [
   { num: '01', title: 'Discovery', desc: 'We learn your business deeply before writing a single line of code.' },
@@ -14,6 +15,7 @@ const steps = [
 
 export default function Process() {
   const sectionRef = useRef(null);
+  const images = useSiteImages();
   const lineRef = useRef(null);
   const dotRefs = useRef([]);
   const contentRefs = useRef([]);
@@ -97,7 +99,7 @@ export default function Process() {
         <ParallaxLayer speed={0.2} className="w-1/2">
           <div className="h-full opacity-30"
             style={{
-              backgroundImage: `url(https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?w=960&q=80)`,
+              backgroundImage: `url(${images['process-bg-left']})`,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
             }}
@@ -106,7 +108,7 @@ export default function Process() {
         <ParallaxLayer speed={-0.15} className="w-1/2">
           <div className="h-full opacity-20"
             style={{
-              backgroundImage: `url(https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=960&q=80)`,
+              backgroundImage: `url(${images['process-bg-right']})`,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
             }}

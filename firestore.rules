@@ -19,10 +19,13 @@ service cloud.firestore {
              data.createdAt is timestamp;
     }
 
-    match /contactMessages/{messageId} {
-      // Allow anyone to create a message, but no one to read/update/delete (except admin if needed)
+    match /enquiries/{messageId} {
       allow create: if isValidContactMessage(request.resource.data);
-      allow read, update, delete: if false; 
+      allow read, update, delete: if true;
+    }
+
+    match /site-images/{docId} {
+      allow read, write: if true;
     }
   }
 }

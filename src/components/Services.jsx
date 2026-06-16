@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import gsap from 'gsap';
 import ScrollTrigger from 'gsap/ScrollTrigger';
-import { services } from '../data/services';
+import { services as defaultServices } from '../data/services';
 import ParallaxLayer from './ParallaxLayer';
 import AnimatedText from './AnimatedText';
+import useSiteImages from '../hooks/useSiteImages';
 
 function ServiceCard({ service, index }) {
   const cardRef = useRef(null);
@@ -96,8 +97,12 @@ function ServiceCard({ service, index }) {
   );
 }
 
+const serviceImgMap = { web: 'service-web', mobile: 'service-mobile', android: 'service-android', ios: 'service-ios', 'white-label': 'service-agency', api: 'service-api' };
+
 export default function Services() {
   const gridRef = useRef(null);
+  const images = useSiteImages();
+  const services = defaultServices.map(s => ({ ...s, img: images[serviceImgMap[s.id]] || s.img }));
 
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -135,7 +140,7 @@ export default function Services() {
       <ParallaxLayer speed={0.15} className="absolute inset-0">
         <div className="absolute inset-0 opacity-30"
           style={{
-            backgroundImage: `url(https://images.unsplash.com/photo-1604079628040-94301bb21b91?w=1920&q=80)`,
+            backgroundImage: `url(${images['services-bg-1']})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
           }}
@@ -145,7 +150,7 @@ export default function Services() {
       <ParallaxLayer speed={0.4} className="absolute inset-0">
         <div className="absolute inset-0 opacity-10"
           style={{
-            backgroundImage: `url(https://images.unsplash.com/photo-1518770660439-4636190af475?w=1920&q=80)`,
+            backgroundImage: `url(${images['services-bg-2']})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
           }}

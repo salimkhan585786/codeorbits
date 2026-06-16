@@ -2,14 +2,19 @@ import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import ScrollTrigger from 'gsap/ScrollTrigger';
 import { Quote } from 'lucide-react';
-import { testimonialsData } from '../data/testimonials';
+import { testimonialsData as defaultTestimonials } from '../data/testimonials';
 import ParallaxLayer from './ParallaxLayer';
 import AnimatedText from './AnimatedText';
+import useSiteImages from '../hooks/useSiteImages';
 
 const rotations = ['rotate-[1.5deg]', 'rotate-[-1deg]', 'rotate-[0.5deg]'];
 
+const avatarMap = { 1: 'avatar-rahul', 2: 'avatar-priya', 3: 'avatar-arun', 4: 'avatar-sneha', 5: 'avatar-vikram', 6: 'avatar-neha' };
+
 export default function Testimonials() {
   const sectionRef = useRef(null);
+  const images = useSiteImages();
+  const testimonialsData = defaultTestimonials.map(t => ({ ...t, avatar: images[avatarMap[t.id]] || t.avatar }));
   const cardsRef = useRef([]);
   const orb1Ref = useRef(null);
   const orb2Ref = useRef(null);
@@ -72,7 +77,7 @@ export default function Testimonials() {
       <ParallaxLayer speed={0.1} className="absolute inset-0">
         <div className="absolute inset-0 opacity-20"
           style={{
-            backgroundImage: `url(https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1920&q=80)`,
+            backgroundImage: `url(${images['testimonials-bg']})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
           }}

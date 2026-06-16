@@ -13,10 +13,11 @@ import Contact from './components/Contact';
 import Footer from './components/Footer';
 import CustomCursor from './components/CustomCursor';
 import ScrollProgress from './components/ScrollProgress';
+import AdminPanel from './components/AdminPanel';
 
 gsap.registerPlugin(ScrollTrigger);
 
-export default function App() {
+function Site() {
   useParallax();
   const [loading, setLoading] = useState(true);
 
@@ -61,4 +62,12 @@ export default function App() {
       </div>
     </>
   );
+}
+
+export default function App() {
+  const adminPath = import.meta.env.VITE_ADMIN_PATH;
+  const isAdmin = window.location.pathname === `/${adminPath}`;
+
+  if (isAdmin) return <AdminPanel />;
+  return <Site />;
 }

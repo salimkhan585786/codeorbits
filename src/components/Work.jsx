@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import ScrollTrigger from 'gsap/ScrollTrigger';
-import { projects } from '../data/projects';
+import { projects as defaultProjects } from '../data/projects';
 import ParallaxLayer from './ParallaxLayer';
+import useSiteImages from '../hooks/useSiteImages';
 
 function ProjectCard({ project, index }) {
   const cardRef = useRef(null);
@@ -158,13 +159,18 @@ function ClipReveal({ wrapperRef, imageRef, index }) {
   return null;
 }
 
+const projectImgMap = { paysphere: 'project-paysphere', quickhire: 'project-quickhire', shoporbit: 'project-shaborbit', mediconnect: 'project-mediconnect' };
+
 export default function Work() {
+  const images = useSiteImages();
+  const projects = defaultProjects.map(p => ({ ...p, img: images[projectImgMap[p.id]] || p.img }));
+
   return (
     <section id="work" className="relative py-32 overflow-hidden bg-[#050810]">
       <ParallaxLayer speed={0.2} className="absolute inset-0">
         <div className="absolute inset-0 opacity-20"
           style={{
-            backgroundImage: `url(https://images.unsplash.com/photo-1557804506-669a67965ba0?w=1920&q=80)`,
+            backgroundImage: `url(${images['work-bg']})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
           }}

@@ -3,6 +3,7 @@ import gsap from 'gsap';
 import ScrollTrigger from 'gsap/ScrollTrigger';
 import ParallaxLayer from './ParallaxLayer';
 import useMouseParallax from '../hooks/useMouseParallax';
+import useSiteImages from '../hooks/useSiteImages';
 
 function animateCounter(el, target, duration, suffix) {
   let startTime = null;
@@ -29,6 +30,7 @@ function animateCounter(el, target, duration, suffix) {
 export default function Hero() {
   const mouseRef = useMouseParallax(20);
   const [mounted, setMounted] = useState(false);
+  const images = useSiteImages();
   const heroRef = useRef(null);
   const headlineRef = useRef(null);
   const weRef = useRef(null);
@@ -156,7 +158,7 @@ export default function Hero() {
       <ParallaxLayer speed={0.1} className="absolute inset-0">
         <div ref={galaxyRef} className="absolute inset-0 opacity-30"
           style={{
-            backgroundImage: `url(https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=1920&q=80)`,
+            backgroundImage: `url(${images['hero-galaxy']})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
           }}
@@ -166,7 +168,7 @@ export default function Hero() {
       <ParallaxLayer speed={0.3} className="absolute inset-0">
         <div className="absolute inset-0 opacity-40"
           style={{
-            backgroundImage: `url(https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1920&q=80)`,
+            backgroundImage: `url(${images['hero-nebula']})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
           }}
@@ -176,7 +178,7 @@ export default function Hero() {
       <ParallaxLayer speed={0.6} className="absolute inset-0 flex items-center justify-end overflow-hidden">
         <div ref={planetRef} className="relative w-[500px] md:w-[600px] h-[500px] md:h-[600px] -mr-48 md:-mr-32 opacity-40">
           <img
-            src="https://images.unsplash.com/photo-1614730321146-b6fa6a46bcb4?w=800&q=80"
+            src={images['hero-planet']}
             alt=""
             className="w-full h-full object-cover rounded-full"
             loading="lazy"
