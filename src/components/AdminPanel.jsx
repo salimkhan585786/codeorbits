@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { collection, getDocs, doc, getDoc, setDoc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc, setDoc, updateDoc, deleteDoc, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
+import { uploadToCloudinary } from '../lib/cloudinary';
 
 const defaultImages = [
   { id: 'hero-planet', label: 'Hero Planet', section: 'Hero', url: 'https://images.unsplash.com/photo-1614730321146-b6fa6a46bcb4?w=800&q=80' },
@@ -19,10 +20,6 @@ const defaultImages = [
   { id: 'service-agency', label: 'Service - White-Label', section: 'Services', url: 'https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=600&q=80' },
   { id: 'service-api', label: 'Service - API & Backend', section: 'Services', url: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&q=80' },
   { id: 'work-bg', label: 'Work Background', section: 'Work', url: 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=1920&q=80' },
-  { id: 'project-paysphere', label: 'Project - PaySphere', section: 'Work', url: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&q=80' },
-  { id: 'project-quickhire', label: 'Project - QuickHire', section: 'Work', url: 'https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?w=800&q=80' },
-  { id: 'project-shaborbit', label: 'Project - ShopOrbit', section: 'Work', url: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&q=80' },
-  { id: 'project-mediconnect', label: 'Project - MediConnect', section: 'Work', url: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=800&q=80' },
   { id: 'process-bg-left', label: 'Process Background Left', section: 'Process', url: 'https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?w=960&q=80' },
   { id: 'process-bg-right', label: 'Process Background Right', section: 'Process', url: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=960&q=80' },
   { id: 'testimonials-bg', label: 'Testimonials Background', section: 'Testimonials', url: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1920&q=80' },
@@ -38,6 +35,33 @@ const defaultImages = [
 
 const sections = ['All', 'Hero', 'About', 'Services', 'Work', 'Process', 'Testimonials', 'Contact'];
 
+const dummyProjects = [
+  {
+    title: 'FinTrack Pro',
+    category: 'Web App',
+    desc: 'Advanced financial analytics dashboard with real-time stock tracking, portfolio management, and AI-powered investment insights. Built with React, TypeScript, and WebSocket for live data streaming.',
+    metric: '50,000+ active traders',
+    img: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&q=80',
+    link: 'https://example.com/fintrack',
+  },
+  {
+    title: 'EcoMart',
+    category: 'Mobile',
+    desc: 'Sustainable shopping marketplace connecting eco-conscious consumers with green products. Features carbon footprint tracking, rewards for sustainable choices, and local vendor integration.',
+    metric: '₹1.2Cr+ green sales',
+    img: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=800&q=80',
+    link: 'https://example.com/ecomart',
+  },
+  {
+    title: 'HealthPulse',
+    category: 'Web + Mobile',
+    desc: 'Comprehensive health monitoring platform with wearable device integration, personalized fitness plans, nutrition tracking, and telehealth consultations. HIPAA compliant architecture.',
+    metric: '100K+ health records managed',
+    img: 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=800&q=80',
+    link: 'https://example.com/healthpulse',
+  },
+];
+
 export default function AdminPanel() {
   const [enquiries, setEnquiries] = useState([]);
   const [images, setImages] = useState(defaultImages);
@@ -46,6 +70,12 @@ export default function AdminPanel() {
   const [selectedEnquiry, setSelectedEnquiry] = useState(null);
   const [saving, setSaving] = useState(false);
   const [sectionFilter, setSectionFilter] = useState('All');
+  const [workItems, setWorkItems] = useState([]);
+  const [workLoading, setWorkLoading] = useState(false);
+  const [showWorkForm, setShowWorkForm] = useState(false);
+  const [editingWork, setEditingWork] = useState(null);
+  const [workForm, setWorkForm] = useState({ title: '', category: '', desc: '', metric: '', imgUrl: '', link: '' });
+  const [workUploading, setWorkUploading] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
@@ -78,6 +108,28 @@ export default function AdminPanel() {
     }
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (tab !== 'selectedWork') return;
+    async function fetchWork() {
+      setWorkLoading(true);
+      try {
+        const snap = await getDocs(collection(db, 'selected-work'));
+        const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        if (items.length === 0) {
+          setWorkLoading(false);
+          await seedDummyWork();
+          return;
+        }
+        items.sort((a, b) => (a.order || 0) - (b.order || 0));
+        setWorkItems(items);
+      } catch (err) {
+        console.error('Error fetching selected work:', err);
+      }
+      setWorkLoading(false);
+    }
+    fetchWork();
+  }, [tab]);
 
   const handleImageChange = (id, url) => {
     setImages(prev => prev.map(img => img.id === id ? { ...img, url } : img));
@@ -114,6 +166,151 @@ export default function AdminPanel() {
     return new Date(ts.seconds * 1000).toLocaleString();
   };
 
+  const resetWorkForm = () => {
+    setWorkForm({ title: '', category: '', desc: '', metric: '', imgUrl: '', link: '' });
+    setEditingWork(null);
+    setShowWorkForm(false);
+  };
+
+  const handleWorkImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setWorkUploading(true);
+    try {
+      const url = await uploadToCloudinary(file);
+      setWorkForm(prev => ({ ...prev, imgUrl: url }));
+    } catch (err) {
+      console.error('Upload failed:', err);
+      alert('Image upload failed. Please try again.');
+    }
+    setWorkUploading(false);
+  };
+
+  const saveWorkItem = async () => {
+    if (!workForm.title.trim() || !workForm.imgUrl.trim()) {
+      alert('Title and image are required.');
+      return;
+    }
+    setSaving(true);
+    try {
+      if (editingWork) {
+        await updateDoc(doc(db, 'selected-work', editingWork.id), {
+          title: workForm.title.trim(),
+          category: workForm.category.trim(),
+          desc: workForm.desc.trim(),
+          metric: workForm.metric.trim(),
+          img: workForm.imgUrl.trim(),
+          link: workForm.link.trim(),
+          updatedAt: serverTimestamp(),
+        });
+        setWorkItems(prev => prev.map(item =>
+          item.id === editingWork.id
+            ? { ...item, title: workForm.title.trim(), category: workForm.category.trim(), desc: workForm.desc.trim(), metric: workForm.metric.trim(), img: workForm.imgUrl.trim(), link: workForm.link.trim() }
+            : item
+        ));
+      } else {
+        const docRef = await addDoc(collection(db, 'selected-work'), {
+          title: workForm.title.trim(),
+          category: workForm.category.trim(),
+          desc: workForm.desc.trim(),
+          metric: workForm.metric.trim(),
+          img: workForm.imgUrl.trim(),
+          link: workForm.link.trim(),
+          visible: true,
+          order: workItems.length,
+          createdAt: serverTimestamp(),
+        });
+        setWorkItems(prev => [...prev, {
+          id: docRef.id,
+          title: workForm.title.trim(),
+          category: workForm.category.trim(),
+          desc: workForm.desc.trim(),
+          metric: workForm.metric.trim(),
+          img: workForm.imgUrl.trim(),
+          link: workForm.link.trim(),
+          visible: true,
+          order: workItems.length,
+        }]);
+      }
+      resetWorkForm();
+    } catch (err) {
+      console.error('Error saving work item:', err);
+      alert('Failed to save.');
+    }
+    setSaving(false);
+  };
+
+  const deleteWorkItem = async (id) => {
+    if (!confirm('Delete this project?')) return;
+    try {
+      await deleteDoc(doc(db, 'selected-work', id));
+      setWorkItems(prev => prev.filter(item => item.id !== id));
+    } catch (err) {
+      console.error('Error deleting work item:', err);
+    }
+  };
+
+  const toggleWorkVisibility = async (id, currentVisible) => {
+    try {
+      await updateDoc(doc(db, 'selected-work', id), { visible: !currentVisible });
+      setWorkItems(prev => prev.map(item =>
+        item.id === id ? { ...item, visible: !currentVisible } : item
+      ));
+    } catch (err) {
+      console.error('Error toggling visibility:', err);
+    }
+  };
+
+  const startEditWork = (item) => {
+    setEditingWork(item);
+    setWorkForm({ title: item.title || '', category: item.category || '', desc: item.desc || '', metric: item.metric || '', imgUrl: item.img || '', link: item.link || '' });
+    setShowWorkForm(true);
+  };
+
+  const seedDummyWork = async () => {
+    setWorkLoading(true);
+    try {
+      const batch = dummyProjects.map((p, i) =>
+        addDoc(collection(db, 'selected-work'), {
+          ...p,
+          visible: true,
+          order: i,
+          createdAt: serverTimestamp(),
+        })
+      );
+      const refs = await Promise.all(batch);
+      const newItems = refs.map((ref, i) => ({
+        id: ref.id,
+        ...dummyProjects[i],
+        visible: true,
+        order: i,
+      }));
+      setWorkItems(newItems);
+    } catch (err) {
+      console.error('Error seeding dummy work:', err);
+      alert('Failed to seed projects.');
+    }
+    setWorkLoading(false);
+  };
+
+  const reorderWork = async (fromIdx, toIdx) => {
+    if (toIdx < 0 || toIdx >= workItems.length) return;
+    const updated = [...workItems];
+    const [moved] = updated.splice(fromIdx, 1);
+    updated.splice(toIdx, 0, moved);
+    const withOrder = updated.map((item, i) => ({ ...item, order: i }));
+    setWorkItems(withOrder);
+    try {
+      await Promise.all(
+        withOrder.map(item =>
+          updateDoc(doc(db, 'selected-work', item.id), { order: item.order })
+        )
+      );
+    } catch (err) {
+      console.error('Error reordering:', err);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#050810] text-[#F0F4FF]">
       <nav className="sticky top-0 z-50 bg-[#0A1628]/95 backdrop-blur-xl border-b border-[#00D4FF]/10">
@@ -134,6 +331,9 @@ export default function AdminPanel() {
             </button>
             <button onClick={() => setTab('images')} className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${tab === 'images' ? 'bg-[#00D4FF]/20 text-[#00D4FF]' : 'text-[#F0F4FF]/50 hover:text-[#F0F4FF]'}`}>
               Images
+            </button>
+            <button onClick={() => setTab('selectedWork')} className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${tab === 'selectedWork' ? 'bg-[#00D4FF]/20 text-[#00D4FF]' : 'text-[#F0F4FF]/50 hover:text-[#F0F4FF]'}`}>
+              Selected Work
             </button>
             <a href="/" className="px-4 py-2 rounded-lg text-sm font-medium text-[#F0F4FF]/50 hover:text-[#FF6B35] transition-all">
               Back to Site
@@ -263,6 +463,149 @@ export default function AdminPanel() {
                 {saving ? 'Saving...' : `Save All ${sectionFilter === 'All' ? images.length : images.filter(i => i.section === sectionFilter).length} Images`}
               </button>
             </div>
+          </div>
+        )}
+
+        {!loading && tab === 'selectedWork' && (
+          <div>
+            <div className="flex items-center justify-between mb-6">
+              <h1 className="font-display text-3xl font-bold">Selected Work</h1>
+              <button onClick={() => { resetWorkForm(); setShowWorkForm(true); }} className="px-6 py-2.5 rounded-lg text-sm font-bold bg-[#00D4FF] text-[#050810] hover:shadow-lg hover:shadow-[#00D4FF]/20 transition-all">
+                + Add Project
+              </button>
+            </div>
+            <p className="text-sm text-[#F0F4FF]/40 mb-6">Manage the Selected Work section on your landing page. Toggle visibility with checkboxes.</p>
+
+            {showWorkForm && (
+              <div className="mb-8 p-6 rounded-2xl border border-[#00D4FF]/20 bg-[#0A1628]">
+                <h2 className="font-display text-lg font-bold mb-4">{editingWork ? 'Edit Project' : 'Add New Project'}</h2>
+                <div className="grid sm:grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <label className="block text-[11px] font-medium text-[#F0F4FF]/60 mb-1.5">Title *</label>
+                    <input type="text" value={workForm.title} onChange={(e) => setWorkForm(prev => ({ ...prev, title: e.target.value }))} className="w-full px-3 py-2 bg-[#050810] border border-[#F0F4FF]/10 rounded-lg text-sm text-[#F0F4FF] focus:outline-none focus:border-[#00D4FF]/50 transition-all" placeholder="Project title" />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-medium text-[#F0F4FF]/60 mb-1.5">Category</label>
+                    <input type="text" value={workForm.category} onChange={(e) => setWorkForm(prev => ({ ...prev, category: e.target.value }))} className="w-full px-3 py-2 bg-[#050810] border border-[#F0F4FF]/10 rounded-lg text-sm text-[#F0F4FF] focus:outline-none focus:border-[#00D4FF]/50 transition-all" placeholder="e.g. Web App, Mobile" />
+                  </div>
+                </div>
+                <div className="mb-4">
+                  <label className="block text-[11px] font-medium text-[#F0F4FF]/60 mb-1.5">Description</label>
+                  <textarea value={workForm.desc} onChange={(e) => setWorkForm(prev => ({ ...prev, desc: e.target.value }))} className="w-full px-3 py-2 bg-[#050810] border border-[#F0F4FF]/10 rounded-lg text-sm text-[#F0F4FF] focus:outline-none focus:border-[#00D4FF]/50 transition-all h-20 resize-none" placeholder="Project description" />
+                </div>
+                <div className="grid sm:grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <label className="block text-[11px] font-medium text-[#F0F4FF]/60 mb-1.5">Metric</label>
+                    <input type="text" value={workForm.metric} onChange={(e) => setWorkForm(prev => ({ ...prev, metric: e.target.value }))} className="w-full px-3 py-2 bg-[#050810] border border-[#F0F4FF]/10 rounded-lg text-sm text-[#F0F4FF] focus:outline-none focus:border-[#00D4FF]/50 transition-all" placeholder="e.g. 10,000+ users" />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-medium text-[#F0F4FF]/60 mb-1.5">Reference Link</label>
+                    <input type="url" value={workForm.link} onChange={(e) => setWorkForm(prev => ({ ...prev, link: e.target.value }))} className="w-full px-3 py-2 bg-[#050810] border border-[#F0F4FF]/10 rounded-lg text-sm text-[#F0F4FF] focus:outline-none focus:border-[#00D4FF]/50 transition-all" placeholder="https://..." />
+                  </div>
+                </div>
+                <div className="mb-4">
+                  <label className="block text-[11px] font-medium text-[#F0F4FF]/60 mb-1.5">Project Image *</label>
+                  <div className="flex gap-3 items-start">
+                    <div className="flex-1">
+                      <input type="url" value={workForm.imgUrl} onChange={(e) => setWorkForm(prev => ({ ...prev, imgUrl: e.target.value }))} className="w-full px-3 py-2 bg-[#050810] border border-[#F0F4FF]/10 rounded-lg text-sm text-[#F0F4FF] font-mono focus:outline-none focus:border-[#00D4FF]/50 transition-all" placeholder="Paste image URL or upload below" />
+                    </div>
+                    <label className={`shrink-0 px-4 py-2 rounded-lg text-xs font-medium cursor-pointer transition-all ${workUploading ? 'bg-[#F0F4FF]/10 text-[#F0F4FF]/40' : 'bg-[#7B2FBE]/20 text-[#7B2FBE] hover:bg-[#7B2FBE]/30 border border-[#7B2FBE]/20'}`}>
+                      {workUploading ? 'Uploading...' : 'Upload from Device'}
+                      <input type="file" accept="image/*" onChange={handleWorkImageUpload} className="hidden" disabled={workUploading} />
+                    </label>
+                  </div>
+                  {workForm.imgUrl && (
+                    <div className="mt-3 h-32 rounded-lg overflow-hidden border border-[#F0F4FF]/10">
+                      <img src={workForm.imgUrl} alt="Preview" className="w-full h-full object-cover" onError={(e) => { e.target.style.opacity = '0.15'; e.target.style.objectFit = 'contain'; }} />
+                    </div>
+                  )}
+                </div>
+                <div className="flex gap-3 justify-end">
+                  <button onClick={resetWorkForm} className="px-4 py-2 rounded-lg text-sm font-medium text-[#F0F4FF]/50 hover:text-[#F0F4FF] transition-all">
+                    Cancel
+                  </button>
+                  <button onClick={saveWorkItem} disabled={saving} className="px-6 py-2 rounded-lg text-sm font-bold bg-[#00D4FF] text-[#050810] hover:shadow-lg hover:shadow-[#00D4FF]/20 transition-all disabled:opacity-50">
+                    {saving ? 'Saving...' : editingWork ? 'Update Project' : 'Add Project'}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {workLoading && (
+              <div className="text-center py-20">
+                <div className="w-8 h-8 border-2 border-[#00D4FF] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+                <p className="text-[#F0F4FF]/40 text-sm">Loading projects...</p>
+              </div>
+            )}
+
+            {!workLoading && workItems.length === 0 && (
+              <div className="text-center py-20 text-[#F0F4FF]/40">
+                <p className="text-lg mb-2">No projects yet</p>
+                <p className="text-sm">Click "Add Project" to get started.</p>
+              </div>
+            )}
+
+            {!workLoading && workItems.length > 0 && (
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                {workItems.map((item, idx) => (
+                  <div key={item.id} className={`rounded-2xl border bg-[#0A1628]/40 overflow-hidden transition-all ${item.visible ? 'border-[#F0F4FF]/5' : 'border-[#F0F4FF]/5 opacity-50'}`}>
+                    <div className="h-40 bg-[#050810] overflow-hidden relative">
+                      <img src={item.img} alt={item.title} className="w-full h-full object-cover" onError={(e) => { e.target.style.opacity = '0.15'; e.target.style.objectFit = 'contain'; }} />
+                      <span className="absolute top-2 left-2 px-2 py-0.5 rounded text-[9px] font-mono bg-[#050810]/80 text-[#00D4FF] border border-[#00D4FF]/20">
+                        {item.category || 'Project'}
+                      </span>
+                      <div className="absolute top-2 right-2 flex gap-1">
+                        <button
+                          onClick={() => reorderWork(idx, idx - 1)}
+                          disabled={idx === 0}
+                          className="w-6 h-6 rounded flex items-center justify-center bg-[#050810]/80 border border-[#F0F4FF]/10 text-[#F0F4FF]/60 hover:bg-[#F0F4FF]/10 hover:text-[#F0F4FF] transition-all disabled:opacity-20 disabled:cursor-not-allowed"
+                          title="Move up"
+                        >
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 15l-6-6-6 6"/></svg>
+                        </button>
+                        <button
+                          onClick={() => reorderWork(idx, idx + 1)}
+                          disabled={idx === workItems.length - 1}
+                          className="w-6 h-6 rounded flex items-center justify-center bg-[#050810]/80 border border-[#F0F4FF]/10 text-[#F0F4FF]/60 hover:bg-[#F0F4FF]/10 hover:text-[#F0F4FF] transition-all disabled:opacity-20 disabled:cursor-not-allowed"
+                          title="Move down"
+                        >
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                        </button>
+                      </div>
+                    </div>
+                    <div className="p-4">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="shrink-0 w-5 h-5 rounded bg-[#00D4FF]/10 border border-[#00D4FF]/20 flex items-center justify-center text-[10px] font-mono text-[#00D4FF]">
+                            {idx + 1}
+                          </span>
+                          <h3 className="font-display font-bold text-sm text-[#F0F4FF] truncate">{item.title}</h3>
+                        </div>
+                        <label className="shrink-0 ml-2 flex items-center gap-1.5 cursor-pointer" title={item.visible ? 'Hide from site' : 'Show on site'}>
+                          <input type="checkbox" checked={item.visible !== false} onChange={() => toggleWorkVisibility(item.id, item.visible !== false)} className="w-4 h-4 rounded border-[#F0F4FF]/20 bg-[#050810] text-[#00D4FF] focus:ring-[#00D4FF]/50 cursor-pointer" />
+                          <span className="text-[10px] text-[#F0F4FF]/40">{item.visible !== false ? 'Shown' : 'Hidden'}</span>
+                        </label>
+                      </div>
+                      {item.desc && <p className="text-[11px] text-[#F0F4FF]/50 line-clamp-2 mb-2">{item.desc}</p>}
+                      {item.metric && <p className="text-[10px] font-mono text-[#00D4FF]/70 mb-3">{item.metric}</p>}
+                      <div className="flex gap-2">
+                        <button onClick={() => startEditWork(item)} className="px-3 py-1.5 rounded-lg text-[11px] font-medium bg-[#F0F4FF]/5 text-[#F0F4FF]/60 hover:bg-[#F0F4FF]/10 hover:text-[#F0F4FF] transition-all">
+                          Edit
+                        </button>
+                        <button onClick={() => deleteWorkItem(item.id)} className="px-3 py-1.5 rounded-lg text-[11px] font-medium text-red-400/60 hover:bg-red-500/10 hover:text-red-400 transition-all">
+                          Delete
+                        </button>
+                        {item.link && (
+                          <a href={item.link} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 rounded-lg text-[11px] font-medium bg-[#00D4FF]/10 text-[#00D4FF]/60 hover:bg-[#00D4FF]/20 hover:text-[#00D4FF] transition-all">
+                            Visit
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </main>

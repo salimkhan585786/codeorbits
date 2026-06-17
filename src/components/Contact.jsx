@@ -93,6 +93,21 @@ export default function Contact() {
         ...form,
         createdAt: serverTimestamp(),
       });
+
+      const subject = encodeURIComponent(`New Enquiry from ${form.name} - CodeOrbits`);
+      const body = encodeURIComponent(
+        `New Project Enquiry\n` +
+        `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n` +
+        `Name: ${form.name}\n` +
+        `Email: ${form.email}\n` +
+        (form.type ? `Project Type: ${form.type}\n` : '') +
+        (form.budget ? `Budget: ${form.budget}\n` : '') +
+        `\nMessage:\n${form.message}\n` +
+        `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+        `Sent from CodeOrbits Contact Form`
+      );
+      window.open(`mailto:contact@codeorbits.in?subject=${subject}&body=${body}`, '_self');
+
       setForm({ name: '', email: '', type: '', budget: '', message: '' });
       setSuccess(true);
     } catch (err) {
@@ -152,8 +167,12 @@ export default function Contact() {
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00D4FF" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
                   </div>
                   <div>
-                    <p className="text-xs text-[#F0F4FF]/40">Email us</p>
-                    <p className="font-mono text-sm text-[#F0F4FF]/80">hello@codeorbits.in</p>
+                    <p className="text-xs text-[#F0F4FF]/40 mb-1">Email us at</p>
+                    <div className="flex flex-col gap-1">
+                      <a href="mailto:contact@codeorbits.in" className="font-mono text-sm text-[#F0F4FF]/80 hover:text-[#00D4FF] transition-colors">contact@codeorbits.in</a>
+                      <a href="mailto:support@codeorbits.in" className="font-mono text-sm text-[#F0F4FF]/80 hover:text-[#00D4FF] transition-colors">support@codeorbits.in</a>
+                      <a href="mailto:salim@codeorbits.in" className="font-mono text-sm text-[#F0F4FF]/80 hover:text-[#00D4FF] transition-colors">salim@codeorbits.in</a>
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-4 group">
@@ -168,11 +187,15 @@ export default function Contact() {
               </div>
 
               <div className="flex gap-4">
-                {['LinkedIn', 'GitHub', 'Twitter'].map((s) => (
-                  <a key={s} href="#" className="px-5 py-2.5 border border-[#F0F4FF]/10 rounded-full text-xs text-[#F0F4FF]/60 hover:border-[#00D4FF]/30 hover:text-[#00D4FF] transition-all font-medium">
-                    {s}
-                  </a>
-                ))}
+                <a href="https://www.linkedin.com/in/salim-khan-41906b286/" target="_blank" rel="noopener noreferrer" className="px-5 py-2.5 border border-[#F0F4FF]/10 rounded-full text-xs text-[#F0F4FF]/60 hover:border-[#00D4FF]/30 hover:text-[#00D4FF] transition-all font-medium">
+                  LinkedIn
+                </a>
+                <a href="https://github.com/salimkhan585786" target="_blank" rel="noopener noreferrer" className="px-5 py-2.5 border border-[#F0F4FF]/10 rounded-full text-xs text-[#F0F4FF]/60 hover:border-[#00D4FF]/30 hover:text-[#00D4FF] transition-all font-medium">
+                  GitHub
+                </a>
+                <a href="https://wa.me/917021414700" target="_blank" rel="noopener noreferrer" className="px-5 py-2.5 border border-[#F0F4FF]/10 rounded-full text-xs text-[#F0F4FF]/60 hover:border-[#00D4FF]/30 hover:text-[#00D4FF] transition-all font-medium">
+                  WhatsApp
+                </a>
               </div>
             </div>
 

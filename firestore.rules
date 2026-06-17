@@ -27,5 +27,9 @@ service cloud.firestore {
     match /site-images/{docId} {
       allow read, write: if true;
     }
+
+    match /selected-work/{docId} {
+      allow read, write: if true;
+    }
   }
 }
