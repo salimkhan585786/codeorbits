@@ -74,15 +74,15 @@ export default function About() {
               </span>.
             </h2>
             <p className="text-[#F0F4FF]/60 leading-relaxed mb-6 text-lg">
-              <AnimatedText text="CodeOrbits brings together design, engineering, and strategy under one roof. From concept to deployment, across web, mobile, Android, and iOS — we build products that move businesses forward." type="words" stagger={30} delay={800} />
+              <AnimatedText text="Based in Mumbai, India, CodeOrbits brings together design, engineering, and strategy under one roof. From concept to deployment, across web, mobile, Android, and iOS — we build products that move businesses forward." type="words" stagger={30} delay={800} />
             </p>
           </div>
 
           <div className="relative h-[600px] hidden md:block">
-            {[
-              { ref: img1Ref, src: images['about-1'], alt: 'Developer', cls: 'top-0 right-0 w-64 h-80', border: '#00D4FF', idx: 0 },
-              { ref: img2Ref, src: images['about-2'], alt: 'Team meeting', cls: 'top-20 left-0 w-72 h-80 z-10', border: '#7B2FBE', idx: 1 },
-              { ref: img3Ref, src: images['about-3'], alt: 'Modern office', cls: 'bottom-0 right-10 w-80 h-64', border: '#00D4FF', idx: 2 },
+              {[
+              { ref: img1Ref, src: images['about-1'], alt: 'CodeOrbits developer working on web application Mumbai', cls: 'top-0 right-0 w-64 h-80', border: '#00D4FF', idx: 0 },
+              { ref: img2Ref, src: images['about-2'], alt: 'CodeOrbits team meeting in Mumbai office', cls: 'top-20 left-0 w-72 h-80 z-10', border: '#7B2FBE', idx: 1 },
+              { ref: img3Ref, src: images['about-3'], alt: 'Modern web development workspace Mumbai', cls: 'bottom-0 right-10 w-80 h-64', border: '#00D4FF', idx: 2 },
             ].map((img) => (
               <div
                 key={img.idx}

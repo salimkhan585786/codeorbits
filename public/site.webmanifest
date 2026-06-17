@@ -1,0 +1,21 @@
+{
+  "name": "CodeOrbits — Web & Mobile Development Agency Mumbai",
+  "short_name": "CodeOrbits",
+  "description": "Top-rated web and mobile app development agency in Mumbai, India. React, Node.js, Flutter experts.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#6366f1",
+  "icons": [
+    {
+      "src": "/favicon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

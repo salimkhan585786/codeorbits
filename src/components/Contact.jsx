@@ -133,18 +133,18 @@ export default function Contact() {
               <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
                 {scrambleActive ? (
                   <>
-                    <ScrambleText text="Ready to orbit something" />{' '}
-                    <span className="text-gradient-cyber"><ScrambleText text="great?" /></span>
+                    <ScrambleText text="Hire a Web Developer in Mumbai" />{' '}
+                    <span className="text-gradient-cyber"><ScrambleText text="today?" /></span>
                   </>
                 ) : (
                   <>
-                    Ready to orbit something{' '}
-                    <span className="text-gradient-cyber">great?</span>
+                    Hire a Web Developer in Mumbai{' '}
+                    <span className="text-gradient-cyber">today?</span>
                   </>
                 )}
               </h2>
               <p className="text-lg text-[#F0F4FF]/60 mb-10 leading-relaxed">
-                Tell us your idea. We'll tell you how to build it.
+                Looking for a reliable development partner in Mumbai? Let&apos;s talk.
               </p>
 
               <div className="space-y-6 mb-10">

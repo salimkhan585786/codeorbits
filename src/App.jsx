@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import gsap from 'gsap';
 import ScrollTrigger from 'gsap/ScrollTrigger';
 import useParallax from './hooks/useParallax';
+import SEO from './components/SEO';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import About from './components/About';
@@ -48,16 +49,19 @@ function Site() {
       </div>
 
       <div className={`transition-opacity duration-700 ${loading ? 'opacity-0' : 'opacity-100'}`}>
+        <SEO />
         <CustomCursor />
         <ScrollProgress />
         <Navbar />
-        <Hero />
-        <About />
-        <Services />
-        <Work />
-        <Process />
-        <Testimonials />
-        <Contact />
+        <main id="main-content" role="main" aria-label="CodeOrbits Portfolio">
+          <Hero />
+          <About />
+          <Services />
+          <Work />
+          <Process />
+          <Testimonials />
+          <Contact />
+        </main>
         <Footer />
       </div>
     </>

@@ -12,8 +12,20 @@ export default defineConfig(({mode}) => {
         '@': path.resolve(__dirname, '.'),
       },
     },
+    build: {
+      rollupOptions: {
+        output: {
+          assetFileNames: 'assets/[name]-[hash][extname]',
+          chunkFileNames: 'assets/[name]-[hash].js',
+          entryFileNames: 'assets/[name]-[hash].js',
+        },
+      },
+    },
     server: {
       hmr: process.env.DISABLE_HMR !== 'true',
+      headers: {
+        'Cache-Control': 'public, max-age=31536000',
+      },
     },
   };
 });

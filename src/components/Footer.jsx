@@ -31,7 +31,7 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-8 pt-6 border-t border-[#00D4FF]/5 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-[#F0F4FF]/30">
+        <address itemScope itemType="https://schema.org/LocalBusiness" className="mt-8 pt-6 border-t border-[#00D4FF]/5 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-[#F0F4FF]/30 not-italic">
           <div className="flex flex-wrap items-center gap-3">
             <a href="mailto:contact@codeorbits.in" className="hover:text-[#00D4FF] transition-colors">contact@codeorbits.in</a>
             <span className="text-[#F0F4FF]/10">|</span>
@@ -39,8 +39,9 @@ export default function Footer() {
             <span className="text-[#F0F4FF]/10">|</span>
             <a href="mailto:salim@codeorbits.in" className="hover:text-[#00D4FF] transition-colors">salim@codeorbits.in</a>
           </div>
-          <p>© 2025 CodeOrbits. All orbits reserved.</p>
-        </div>
+          <p>© {new Date().getFullYear()} <span itemProp="name">CodeOrbits</span>. All rights reserved.</p>
+          <p><span itemProp="addressLocality">Mumbai</span>, <span itemProp="addressRegion">Maharashtra</span>, <span itemProp="addressCountry">India</span> · codeorbits.in</p>
+        </address>
       </div>
     </footer>
   );

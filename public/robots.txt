@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Sitemaps
+Sitemap: https://codeorbits.in/sitemap.xml
+
+# Block irrelevant paths
+Disallow: /404

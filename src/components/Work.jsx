@@ -83,7 +83,7 @@ function ProjectCard({ project, index }) {
           className="w-full h-full transition-transform duration-300"
           style={{ transform: 'scale(1.3)' }}
         >
-          <img src={project.img} alt={project.title} className="w-full h-full object-cover" loading="lazy" />
+          <img src={project.img} alt={`${project.title} - built by CodeOrbits Mumbai`} className="w-full h-full object-cover" loading="lazy" />
         </div>
       </div>
 

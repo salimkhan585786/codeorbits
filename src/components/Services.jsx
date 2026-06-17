@@ -76,7 +76,7 @@ function ServiceCard({ service, index }) {
       />
 
       <div ref={imageRef} className="absolute inset-0 transition-transform duration-300">
-        <img src={service.img} alt="" className="w-full h-full object-cover" loading="lazy" />
+        <img src={service.img} alt={`${service.title} services Mumbai`} className="w-full h-full object-cover" loading="lazy" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#050810] via-[#050810]/70 to-[#050810]/40" />
       </div>
 
@@ -161,7 +161,7 @@ export default function Services() {
         <div className="text-center mb-16">
           <p className="font-mono text-xs text-[#00D4FF] tracking-[0.2em] mb-4"><AnimatedText text="// WHAT WE BUILD" type="chars" stagger={40} /></p>
           <h2 className="font-display text-4xl md:text-5xl font-bold">
-            Our <span className="text-gradient-cyber">Services</span>
+            Web &amp; Mobile Development <span className="text-gradient-cyber">Services in Mumbai</span>
           </h2>
         </div>
 

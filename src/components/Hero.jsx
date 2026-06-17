@@ -179,9 +179,10 @@ export default function Hero() {
         <div ref={planetRef} className="relative w-[500px] md:w-[600px] h-[500px] md:h-[600px] -mr-48 md:-mr-32 opacity-40">
           <img
             src={images['hero-planet']}
-            alt=""
+            alt="CodeOrbits web development agency Mumbai"
             className="w-full h-full object-cover rounded-full"
-            loading="lazy"
+            loading="eager"
+            fetchPriority="high"
           />
         </div>
       </ParallaxLayer>
@@ -203,7 +204,7 @@ export default function Hero() {
         <div className="max-w-4xl">
           <div className={`transition-all duration-1000 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
             <p className="font-mono text-sm text-[#00D4FF] mb-6 tracking-widest">
-              <span className="text-[#7B2FBE]">&gt;</span> FULL-STACK DIGITAL AGENCY
+              <span className="text-[#7B2FBE]">&gt;</span> MUMBAI&apos;S WEB &amp; MOBILE DEVELOPMENT AGENCY
             </p>
             <h1 ref={headlineRef} className="font-display font-bold leading-[0.95] mb-8" style={{ perspective: '800px' }}>
               <span ref={weRef} className="text-6xl md:text-8xl lg:text-[96px] text-[#F0F4FF] block">
@@ -217,7 +218,7 @@ export default function Hero() {
               </span>
             </h1>
             <p className="text-lg md:text-xl text-[#F0F4FF]/60 mb-10 max-w-xl font-light leading-relaxed">
-              Web • Mobile • Android • iOS — Delivered end-to-end.
+              React, Node.js, Flutter — Delivered end-to-end for startups and businesses across Mumbai, India.
             </p>
             <div className="flex flex-wrap gap-4">
               <a
