@@ -94,20 +94,6 @@ export default function Contact() {
         createdAt: serverTimestamp(),
       });
 
-      const subject = encodeURIComponent(`New Enquiry from ${form.name} - CodeOrbits`);
-      const body = encodeURIComponent(
-        `New Project Enquiry\n` +
-        `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n` +
-        `Name: ${form.name}\n` +
-        `Email: ${form.email}\n` +
-        (form.type ? `Project Type: ${form.type}\n` : '') +
-        (form.budget ? `Budget: ${form.budget}\n` : '') +
-        `\nMessage:\n${form.message}\n` +
-        `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
-        `Sent from CodeOrbits Contact Form`
-      );
-      window.open(`mailto:contact@codeorbits.in?subject=${subject}&body=${body}`, '_self');
-
       setForm({ name: '', email: '', type: '', budget: '', message: '' });
       setSuccess(true);
     } catch (err) {
