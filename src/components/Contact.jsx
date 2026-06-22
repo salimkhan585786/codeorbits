@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import emailjs from '@emailjs/browser';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import ParallaxLayer from './ParallaxLayer';
@@ -93,6 +94,18 @@ export default function Contact() {
         ...form,
         createdAt: serverTimestamp(),
       });
+
+      await emailjs.send(
+        import.meta.env.VITE_EMAILJS_SERVICE_ID,
+        import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+        {
+          title: form.type || 'New Enquiry',
+          name: form.name,
+          email: form.email,
+          message: `${form.message}\n\nBudget: ${form.budget || 'Not specified'}\nEmail: ${form.email}`,
+        },
+        import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+      );
 
       setForm({ name: '', email: '', type: '', budget: '', message: '' });
       setSuccess(true);
